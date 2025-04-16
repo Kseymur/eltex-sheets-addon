@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Settings</title>
+  <?!= include('SidebarStyles') ?>
+  <style>
+    .model-config {
+      margin-bottom: 20px;
+    }
+    
+    .model-config label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .warning-text {
+      color: #d73a49;
+      font-size: 0.875rem;
+      margin-bottom: 20px;
+    }
+
+    .model-select {
+      width: 100%;
+      padding: 5px;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <p class="warning-text">⚠️ Warning: Only modify these settings if you know what you're doing.</p>
+
+  <div class="model-config">
+    <label>OpenAI Default Model:</label>
+    <select id="openai-default" class="model-select">
+      <option value="gpt-4o-2024-08-06">GPT-4O</option>
+      <option value="gpt-4o-mini-2024-07-18">GPT-4O Mini</option>
+    </select>
+  </div>
+
+  <div class="model-config">
+    <label>Anthropic Default Model:</label>
+    <select id="anthropic-default" class="model-select">
+      <option value="claude-3-7-sonnet-20250219">Claude 3.7 Sonnet</option>
+      <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
+      <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+    </select>
+  </div>
+
+  <div class="model-config">
+    <label>Google Default Model:</label>
+    <select id="google-default" class="model-select">
+      <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+      <option value="gemini-2.0-pro-exp-02-05">Gemini 2.0 Pro</option>
+    </select>
+  </div>
+
+  <div class="model-config">
+    <label>Default Summarization Model:</label>
+    <select id="summarization-default" class="model-select">
+      <option value="gpt-4o-2024-08-06" data-provider="openai">GPT-4O</option>
+      <option value="claude-3-7-sonnet-20250219" data-provider="anthropic">Claude 3.7 Sonnet</option>
+      <option value="gemini-2.0-pro-exp-02-05" data-provider="google">Gemini 2.0 Pro</option>
+    </select>
+  </div>
+
+  <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button class="btn" onclick="goBack()">← Back</button>
+    <button class="btn" onclick="saveSettings()">Save Settings</button>
+  </div>
+  <div id="status" class="status"></div>
+
+  <script>
+    let defaultModels = null;
+
+    function saveSettings() {
+      const summSelect = document.getElementById('summarization-default');
+      const selectedOption = summSelect.options[summSelect.selectedIndex];
+      
+      const newConfig = {
+        OPENAI: document.getElementById('openai-default').value,
+        ANTHROPIC: document.getElementById('anthropic-default').value,
+        GOOGLE: document.getElementById('google-default').value,
+        SUMMARIZATION: {
+          provider: selectedOption.getAttribute('data-provider'),
+          model: selectedOption.value
+        }
+      };
+
+      google.script.run
+        .withSuccessHandler(() => {
+          showStatus('Settings saved successfully! Refreshing...', true);
+          setTimeout(() => {
+            google.script.host.close();
+          }, 1500);
+        })
+        .withFailureHandler((error) => {
+          showStatus('Error saving settings: ' + error, false);
+        })
+        .saveAdvancedSettings(newConfig);
+    }
+
+    function showStatus(message, isSuccess) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.style.display = 'block';
+      statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+      
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 3000);
+    }
+
+    function goBack() {
+      google.script.run.showIndicatorsGenerationSidebar();
+    }
+
+    google.script.run
+      .withSuccessHandler((models) => {
+        defaultModels = models;
+        document.getElementById('openai-default').value = models.OPENAI;
+        document.getElementById('anthropic-default').value = models.ANTHROPIC;
+        document.getElementById('google-default').value = models.GOOGLE;
+        
+        const summSelect = document.getElementById('summarization-default');
+        const options = Array.from(summSelect.options);
+        const targetOption = options.find(opt => 
+          opt.value === models.SUMMARIZATION.model && 
+          opt.getAttribute('data-provider') === models.SUMMARIZATION.provider
+        );
+        if (targetOption) {
+          summSelect.value = targetOption.value;
+        }
+      })
+      .withFailureHandler((error) => {
+        showStatus('Error loading settings: ' + error, false);
+      })
+      .getDefaultModels();
+  </script>
+</body>
+</html>

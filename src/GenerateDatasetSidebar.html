@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Dataset</title>
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <div class="step-indicator">Dataset Generation (Step 4 of 4)</div>
+
+    <div class="generation-section">
+      <h2>Generate Dataset</h2>
+      <div class="status">
+        Status: <span id="generationStatus">Not started</span>
+      </div>
+      <div class="success-message" id="successMessage">
+        <p>Your data is ready!</p>
+        <button class="btn" onclick="getGeneratedData()">Get Data on Sheet</button>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn" onclick="goToIndicatorsSidebar()">← Back</button>
+      <button class="btn" id="startGenerationBtn" onclick="startDatasetGeneration()">Start Generation</button>
+    </div>
+
+    <script>
+      let statusCheckInterval;
+
+      function startDatasetGeneration() {
+        document.getElementById('generationStatus').textContent = 'Generating...';
+        document.getElementById('startGenerationBtn').disabled = true;
+
+        google.script.run
+          .withSuccessHandler(() => {
+            startStatusCheck(); 
+          })
+          .withFailureHandler((error) => {
+            document.getElementById('generationStatus').textContent = 'Error: ' + error;
+            document.getElementById('startGenerationBtn').disabled = false;
+          })
+          .generateOnSheetGenerate(); 
+      }
+
+      function startStatusCheck() {
+        if (statusCheckInterval) {
+          clearInterval(statusCheckInterval); 
+        }
+        statusCheckInterval = setInterval(checkGenerationStatus, 10000);
+        checkGenerationStatus(); 
+      }
+
+      function checkGenerationStatus() {
+        google.script.run
+          .withSuccessHandler((status) => {
+            if (!status) {
+              document.getElementById('generationStatus').textContent = 'Unknown status: null';
+              return;
+            }
+
+            if (status === 'complete' || status === 'completed') {
+              clearInterval(statusCheckInterval); 
+              statusCheckInterval = null; 
+              document.getElementById('successMessage').style.display = 'block';
+              document.getElementById('generationStatus').textContent = 'Data is ready!';
+              document.getElementById('startGenerationBtn').disabled = false; 
+            } else if (status === 'in_progress') {
+              document.getElementById('generationStatus').textContent = 'Generating...';
+            } else if (status === 'no_batch') {
+              document.getElementById('generationStatus').textContent = 'No batch job found.';
+            } else if (status === 'no_api_key') {
+              document.getElementById('generationStatus').textContent = 'API key is not set.';
+            } else if (status === 'unknown') {
+              document.getElementById('generationStatus').textContent = 'Unknown status from API.';
+            } else if (status === 'error') {
+              document.getElementById('generationStatus').textContent = 'Error checking status.';
+              clearInterval(statusCheckInterval); 
+              statusCheckInterval = null; 
+            } else {
+              document.getElementById('generationStatus').textContent = `Unexpected status: ${status}`;
+            }
+          })
+          .withFailureHandler((error) => {
+            document.getElementById('generationStatus').textContent = 'Error: ' + error;
+            clearInterval(statusCheckInterval); 
+            statusCheckInterval = null; 
+          })
+          .checkGenerationStatus(); 
+      }
+
+      function getGeneratedData() {
+        google.script.run
+          .withSuccessHandler(() => {
+            alert('Data has been added to the sheet!');
+          })
+          .withFailureHandler((error) => {
+            alert('Error: ' + error);
+          })
+          .getSyntheticData(); 
+      }
+
+      function goToIndicatorsSidebar() {
+        google.script.run.showIndicatorsGenerationSidebar();
+      }
+    </script>
+  </body>
+</html>

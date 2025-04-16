@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <label for="projectName">Project Name: <span style="color: red;">*</span></label>
+    <input type="text" id="projectName" placeholder="Enter project name">
+    <div class="tip">This field is required.</div>
+
+    <label for="description">Description:</label>
+    <input type="text" id="description" placeholder="Enter project description (optional)">
+    <div class="tip">This field is optional.</div>
+
+    <button id="createProjectBtn" type="button">Create Project</button>
+    <div id="errorMessage" class="error"></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('createProjectBtn');
+        const errorEl = document.getElementById('errorMessage');
+        const nameInput = document.getElementById('projectName');
+        const descInput = document.getElementById('description');
+
+        if (!google?.script?.run) {
+          errorEl.textContent = "Add-on failed to load. Please reload the spreadsheet and try again.";
+          errorEl.style.display = 'block';
+          btn.disabled = true;
+          return;
+        }
+
+        btn.addEventListener('click', () => {
+          errorEl.style.display = 'none';
+          const name = nameInput.value.trim();
+          const description = descInput.value;
+
+          if (!name) {
+            errorEl.textContent = 'Please enter a project name';
+            errorEl.style.display = 'block';
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = 'Creating...';
+
+          google.script.run
+            .withSuccessHandler(() => {
+              google.script.host.close();
+            })
+            .withFailureHandler((error) => {
+              errorEl.textContent = "Error creating project: " + (error?.message || error);
+              errorEl.style.display = 'block';
+              btn.disabled = false;
+              btn.textContent = 'Create Project';
+            })
+            .createNewProject({ name, description });
+        });
+      });
+    </script>
+  </body>
+</html>

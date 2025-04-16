@@ -1,0 +1,17 @@
+{
+    "timeZone": "America/New_York",
+    "exceptionLogging": "STACKDRIVER",
+    "runtimeVersion": "V8",
+    "urlFetchWhitelist": [
+      "https://api.openai.com/v1/",
+      "https://api.anthropic.com/v1/messages",
+      "https://generativelanguage.googleapis.com/v1beta/models/"
+    ],
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/spreadsheets",
+      "https://www.googleapis.com/auth/script.container.ui",
+      "https://www.googleapis.com/auth/script.external_request",
+      "https://www.googleapis.com/auth/drive",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  }

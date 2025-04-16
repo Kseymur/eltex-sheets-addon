@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?!= include('SidebarStyles') ?>
+    <style>
+      .accordion {
+        margin-bottom: 10px;
+      }
+      .accordion-header {
+        background-color: #f4f4f4;
+        padding: 10px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .accordion-content {
+        display: none;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-top: none;
+      }
+      .models-info ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .models-info li {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+      }
+      .summarization-info h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Indicators Generation</h2>
+
+    <div class="generation-section">
+      <textarea id="generatedIndicators" class="form-control" placeholder="Generated indicators will appear here" style="min-height: 180px; max-height: 400px; resize: vertical;"></textarea>
+      <div class="tip">Review and approve or regenerate indicators.</div>
+      <div class="button-group">
+        <button class="btn primary" onclick="generateIndicators()">Generate</button>
+        <button class="btn" onclick="approveIndicators()">Approve</button>
+        <button class="btn retry" onclick="regenerateIndicators()">↺ Retry</button>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleSection('providers')">
+        Models Information
+      </div>
+      <div id="providers" class="accordion-content">
+        <h3>Generation Models</h3>
+        <div class="models-info">
+          <ul>
+            <li>
+              <input type="checkbox" name="provider" value="openai" onchange="handleProviderChange(this)" checked>
+              <span class="model-name">GPT-4O</span>
+            </li>
+            <li>
+              <input type="checkbox" name="provider" value="anthropic" onchange="handleProviderChange(this)" checked>
+              <span class="model-name">Claude 3.7 Sonnet</span>
+            </li>
+            <li>
+              <input type="checkbox" name="provider" value="google" onchange="handleProviderChange(this)" checked>
+              <span class="model-name">Gemini 2.0 Flash</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="summarization-info">
+          <h3>Summarization Model</h3>
+          <p>OpenAI GPT-4O</p>
+          <div class="tip">This model will combine and deduplicate indicators from selected providers above</div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <button class="btn" id="advancedSettingsBtn" onclick="openAdvancedSettings()" style="background-color: #666;">
+            ⚙️ Advanced Settings
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button class="btn" onclick="goToDatasetParametersSidebar()">← Back</button>
+      <button class="btn" onclick="proceedToDatasetGenerationStep()">Next →</button>
+    </div>
+
+    <script>
+      let defaultModels = null;
+
+      function toggleSection(id) {
+        const content = document.getElementById(id);
+        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+      }
+
+      function handleProviderChange(checkbox) {
+        const checkedProviders = document.querySelectorAll('input[name="provider"]:checked').length;
+        if (checkedProviders === 0) {
+          showStatus('At least one provider must be selected', false);
+        }
+      }
+
+      function getSelectedProviders() {
+        const providers = {};
+        document.querySelectorAll('input[name="provider"]:checked').forEach(checkbox => {
+          providers[checkbox.value] = defaultModels[checkbox.value.toUpperCase()];
+        });
+        return providers;
+      }
+
+      function getSummarizationConfig() {
+        return defaultModels.SUMMARIZATION || {
+          provider: 'openai',
+          model: defaultModels.OPENAI
+        };
+      }
+
+      function generateIndicators() {
+        const providers = getSelectedProviders();
+        if (Object.keys(providers).length === 0) {
+          showStatus('Please select at least one provider', false);
+          return;
+        }
+
+        const button = document.querySelector('button.primary');
+        button.disabled = true;
+        button.textContent = 'Generating...';
+
+        google.script.run
+          .withSuccessHandler((response) => {
+            document.getElementById('generatedIndicators').value = response;
+            button.disabled = false;
+            button.textContent = 'Generate';
+            showStatus('Indicators generated successfully!', true);
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error generating indicators: ' + error, false);
+            button.disabled = false;
+            button.textContent = 'Generate';
+          })
+          .generateIndicatorsForSidebar();
+      }
+
+      function approveIndicators() {
+        const indicators = document.getElementById('generatedIndicators').value;
+        if (!indicators || indicators === "Generating indicators...") {
+          showStatus('No indicators to approve', false);
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(() => {
+            showStatus('Indicators approved and saved!', true);
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error approving indicators: ' + error, false);
+          })
+          .approveIndicators(indicators);
+      }
+
+      function regenerateIndicators() {
+        generateIndicators();
+      }
+
+      function openAdvancedSettings() {
+        google.script.run.showAdvancedSettingsSidebar();
+      }
+
+      function proceedToDatasetGenerationStep() {
+        google.script.run
+          .withSuccessHandler(() => {
+            google.script.run.showGenerateDatasetSidebar();
+          })
+          .showReadyToGenerateAlert();
+      }
+
+      function goToDatasetParametersSidebar() {
+        google.script.run.showDatasetParametersSidebar();
+      }
+
+      function updateModelDisplay() {
+        if (!defaultModels) return;
+        
+        document.querySelectorAll('.model-name').forEach(span => {
+          const checkbox = span.previousElementSibling;
+          const provider = checkbox.value;
+          const modelId = defaultModels[provider.toUpperCase()];
+          span.textContent = getModelDisplayName(modelId);
+        });
+
+        const summaryModelP = document.querySelector('.summarization-info p');
+        const summConfig = defaultModels.SUMMARIZATION;
+        summaryModelP.textContent = getModelDisplayName(summConfig.model);
+      }
+
+      function getModelDisplayName(modelId) {
+        const modelNames = {
+          'gpt-4o-2024-08-06': 'GPT-4O',
+          'gpt-4o-mini-2024-07-18': 'GPT-4O Mini',
+          'claude-3-7-sonnet-20250219': 'Claude 3.7 Sonnet',
+          'claude-3-5-haiku-20241022': 'Claude 3.5 Haiku',
+          'claude-3-opus-20240229': 'Claude 3 Opus',
+          'gemini-2.0-flash': 'Gemini 2.0 Flash',
+          'gemini-2.0-pro-exp-02-05': 'Gemini 2.0 Pro'
+        };
+        return modelNames[modelId] || modelId;
+      }
+
+      function showStatus(message, isSuccess) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = message;
+        statusDiv.style.display = 'block';
+        statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+        
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 3000);
+      }
+
+      function loadApprovedIndicators() {
+        google.script.run
+          .withSuccessHandler((result) => {
+            if (result && result.length > 0) {
+              const lastApproved = result[result.length - 1];
+              document.getElementById('generatedIndicators').value = lastApproved.indicators;
+            }
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error loading approved indicators: ' + error, false);
+          })
+          .getApprovedIndicators();
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        google.script.run
+          .withSuccessHandler((models) => {
+            defaultModels = models;
+            updateModelDisplay();
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error loading models: ' + error, false);
+          })
+          .getDefaultModels();
+
+        loadApprovedIndicators();
+      });
+    </script>
+  </body>
+</html>

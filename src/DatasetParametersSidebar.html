@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Parameters</title>
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <div class="container">
+      <div class="step-indicator">Dataset Configuration (Step 2 of 4)</div>
+      <div class="required-note">* Required fields</div>
+
+      <div class="form-section">
+        <div class="form-group">
+          <label for="topic" class="required">Topic</label>
+          <input type="text" id="topic" class="form-control" 
+                 placeholder="e.g., Cyberattacks, Climate Change">
+          <div class="tooltip">ⓘ
+            <span class="tooltip-text">Main subject or event your dataset will focus on</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="industry" class="required">Industry</label>
+          <input type="text" id="industry" class="form-control" 
+                 placeholder="e.g., Finance, Healthcare, Technology">
+          <div class="tooltip">ⓘ
+            <span class="tooltip-text">Sector or field where the events take place</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="stakeholders" class="required">Stakeholders</label>
+          <input type="text" id="stakeholders" class="form-control" 
+                 placeholder="e.g., Customers, Employees, Investors">
+          <div class="tooltip">ⓘ
+            <span class="tooltip-text">People or groups affected by the events</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="consequences" class="required">Key Consequences</label>
+          <input type="text" id="consequences" class="form-control" 
+                 placeholder="e.g., Financial Losses, Health Impacts, Productivity Gains">
+          <div class="tooltip">ⓘ
+            <span class="tooltip-text">Main impacts or outcomes of the events</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-group">
+          <label for="numMessages" class="required">Dataset Size</label>
+          <div class="range-control">
+            <input type="number" id="numMessages" class="form-control" 
+                   min="100" max="10000" step="100" value="100">
+            <div class="tooltip">ⓘ
+              <span class="tooltip-text">Generation creates 10 synthetic messages per real message</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="temperatureInput">Temperature</label>
+          <div class="range-control">
+            <input type="hidden" id="temperatureInput" value="0.8">
+            <input type="range" id="temperatureSlider" class="range-slider"
+                   min="0" max="1" step="0.1" value="0.8">
+            <span class="range-value" id="temperatureValue">0.8</span>
+          </div>
+          <div class="tip">Lower (0.1) = More focused | Higher (1.0) = More diverse</div>
+        </div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn" id="saveConfigBtn" onclick="saveGenerationConfig()">Save Configuration</button>
+        <button class="btn" onclick="goToIndicatorsSidebar()">Next →</button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <script>
+      function saveGenerationConfig() {
+        const params = {
+          topic: document.getElementById('topic').value,
+          industry: document.getElementById('industry').value,
+          stakeholders: document.getElementById('stakeholders').value,
+          consequences: document.getElementById('consequences').value,
+          number: document.getElementById('numMessages').value,
+          temperature: document.getElementById('temperatureInput').value 
+        };
+        
+        if (Object.values(params).some(value => !value)) {
+          showStatus('Please fill in all required fields', false);
+          return;
+        }
+
+        const saveButton = document.getElementById('saveConfigBtn');
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+
+        google.script.run
+          .withSuccessHandler(() => {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Configuration';
+            showStatus('Configuration saved successfully!', true);
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error saving configuration: ' + error, false);
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Configuration';
+            console.error('Error saving parameters:', error);
+          })
+          .saveGenerationParameters(params);
+      }
+
+      function loadSavedConfig() {
+        google.script.run
+          .withSuccessHandler((params) => {
+            if (params) {
+              const fields = ['topic', 'industry', 'stakeholders', 'consequences', 'number', 'temperature'];
+              fields.forEach(field => {
+                const value = params[field] || (field === 'number' ? '100' : field === 'temperature' ? '0.8' : '');
+                
+                if (field === 'number') {
+                  document.getElementById('numMessages').value = value;
+                } else if (field === 'temperature') {
+                  document.getElementById('temperatureInput').value = value;
+                  document.getElementById('temperatureSlider').value = value;
+                  document.getElementById('temperatureValue').textContent = parseFloat(value).toFixed(1);
+                } else {
+                  document.getElementById(field).value = value;
+                }
+              });
+            }
+          })
+          .withFailureHandler((error) => {
+            showStatus('Error loading parameters: ' + error, false);
+          })
+          .getGenerationParameters();
+      }
+
+      function showStatus(message, isSuccess) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = message;
+        statusDiv.style.display = 'block';
+        statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+        
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 3000);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        loadSavedConfig(); 
+      });
+
+      function goToIndicatorsSidebar() {
+        google.script.run.showIndicatorsGenerationSidebar();
+      }
+
+      document.getElementById('temperatureSlider').addEventListener('input', function(e) {
+        const value = parseFloat(e.target.value);
+        document.getElementById('temperatureValue').textContent = value.toFixed(1);
+        document.getElementById('temperatureInput').value = value; 
+      });
+    </script>
+  </body>
+</html>

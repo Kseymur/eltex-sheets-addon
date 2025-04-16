@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?!= include('SidebarStyles') ?>
+    <title>Indicators Alert</title>
+    <style>
+      .examples-section {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 16px 0;
+        overflow: hidden;
+      }
+      .examples-header {
+        padding: 12px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #ddd;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .examples-content {
+        padding: 16px;
+        display: none;
+      }
+      .examples-content.show {
+        display: block;
+      }
+      .example-item {
+        margin-bottom: 12px;
+        padding-left: 16px;
+        position: relative;
+      }
+      .example-item::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="highlight">
+      <div class="step-indicator">
+        Topic Indicators (Step 3 of 4) 
+      </div>
+
+      <p>This step helps the model understand specialized concepts in your dataset.</p>
+
+      <p>
+        Use the sheet <a href="#" onclick="google.script.run.openSheet(); return false;" style="color:#3367d6; text-decoration: none; border-bottom: 1px dotted #3367d6;"><strong><?= sheetName ?></strong></a> to enhance dataset quality with domain knowledge:
+      </p>
+
+      <ul style="margin: 1em 0 1em 1.25em; padding: 0; line-height: 1.6;">
+        <li>Add general knowledge about the topic that the model might not know</li>
+        <li>List historical events or contextually relevant facts</li>
+      </ul>
+
+      <p style="color: #666; font-size: 0.9rem;">
+        <em>Note: You can leave this sheet empty if you don't have relevant information.</em>
+      </p>
+
+      <p style="margin-top: 16px;">
+        Once you're ready, use the sidebar to generate indicators.
+        Review the results, make any necessary edits, and approve when satisfied.
+      </p>
+    </div>
+
+    <div class="examples-section">
+      <div class="examples-header" onclick="toggleExamples()">
+        <span>View Example Indicators</span>
+        <span id="examplesToggle">▼</span>
+      </div>
+      <div class="examples-content" id="examplesContent">
+        <p style="line-height: 1.6; color: #333;">
+          Key blockchain ecosystem cyberattack indicators include unusual spikes in transaction volume, abnormal confirmation times, unexpected changes in mining difficulty, and suspicious smart contract interactions. Wallet-related red flags involve sudden activation of dormant addresses, unauthorized transactions, and compromised private keys. Exchange-specific indicators include rapid price fluctuations, withdrawal issues, and unexpected downtime. Infrastructure concerns manifest as unverified nodes, synchronization delays, and potential 51% attacks. Cross-chain vulnerabilities, security breaches, phishing attempts, and API compromises are critical to monitor. Community sentiment, governance irregularities, and blockchain explorer activity provide additional context for potential threats.
+        </p>
+      </div>
+    </div>
+
+    <button onclick="google.script.host.close()" style="margin-top: 16px;">
+      Continue to Sidebar →
+    </button>
+
+    <script>
+      function toggleExamples() {
+        const content = document.getElementById('examplesContent');
+        const toggle = document.getElementById('examplesToggle');
+        content.classList.toggle('show');
+        toggle.textContent = content.classList.contains('show') ? '▲' : '▼';
+      }
+    </script>
+  </body>
+</html>

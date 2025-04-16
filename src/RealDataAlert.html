@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <div class="highlight">
+      <div class="step-indicator">Step 1 of 4</div>
+      <p>
+        A new sheet named
+        <a href="#" onclick="google.script.run.openSheet(); return false;" style="color:#3367d6; text-decoration: none; border-bottom: 1px dotted #3367d6;">
+          <strong><?= sheetName ?></strong>
+        </a>
+        has been created in your spreadsheet.
+      </p>
+      <p>
+        Add your examples in <strong>column A</strong> under "Real Data" - one message per row.
+      </p>
+      <div style="margin: 10px 0; text-align: center;">
+        <img src="https://i.imgur.com/mPFehNh.png" 
+            alt="Insert real data into Column A" 
+            style="max-width: 100%; border: 1px solid #ccc; border-radius: 6px;" />
+        <div style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+        ↑ Paste your messages under the “Real Data” header (column A). Minimum 10 messages.
+        </div>
+      </div>
+      <hr style="margin: 16px 0; border: none; border-top: 1px solid #ddd;" />
+      <p><strong>Don't have real data yet?</strong></p>
+      <p>
+        Generate synthetic samples tailored to your needs!
+      </p>
+      <button class="realdata-btn-disabled" disabled>
+        Generate Example Data (coming soon)
+      </button>
+      <div class="next-hint">
+        ℹ️ After adding your data, proceed to the next step in the sidebar
+      </div>
+    </div>
+    <button onclick="google.script.host.close()">Close</button>
+  </body>
+</html>

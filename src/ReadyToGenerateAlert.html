@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ready to Generate</title>
+    <?!= include('SidebarStyles') ?>
+    <style>
+      .steps-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+        counter-reset: step;  
+      }
+      .steps-list li {
+        margin-bottom: 16px;
+        padding-left: 24px;
+        position: relative;
+      }
+      .steps-list li::before {
+        content: counter(step) ".";
+        counter-increment: step;
+        position: absolute;
+        left: 0;
+        color: #3367d6;
+        font-weight: bold;
+      }
+      .time-estimate {
+        background: #e8eaf6;
+        color: #3367d6;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        display: inline-block;
+        margin-left: 8px;
+      }
+      .notification-opt {
+        margin: 20px 0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .notification-opt input[type="checkbox"] {
+        margin: 0;
+      }
+      .coming-soon {
+        background: #f5f5f5;
+        color: #666;
+        padding: 2px 6px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        margin-left: 8px;
+      }
+      .important-note {
+        margin-top: 16px;
+        padding: 12px;
+        background: #fff3e0;
+        border-left: 4px solid #ff9800;
+        border-radius: 4px;
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="highlight">
+      <div class="step-indicator">
+        Ready to Generate Dataset (Step 4 of 4)
+      </div>
+
+      <p>Your configuration is complete! Here's what happens next:</p>
+
+      <ol class="steps-list">
+        <li>
+          Click the [Start Generation] button in the sidebar →
+        </li>
+        <li>
+          Track progress with live status updates
+          <span class="time-estimate">Typical time: 10-30 minutes</span>
+        </li>
+        <li>
+          When status shows "Data is ready", click [Get Data on Sheet]
+          to download your generated dataset
+        </li>
+      </ol>
+
+      <div class="notification-opt">
+        <input type="checkbox" id="emailNotify" disabled>
+        <label for="emailNotify">
+          Email me when my dataset is ready
+          <span class="coming-soon">coming soon</span>
+        </label>
+      </div>
+
+      <div class="important-note">
+        <strong>Important:</strong> Generation may take up to 24 hours for large datasets. 
+        You can close this window - your generation will continue in the background.
+      </div>
+    </div>
+
+    <button class="btn" onclick="startGeneration()">
+      Start Generation Now →
+    </button>
+
+    <script>
+      function startGeneration() {
+        google.script.host.close();
+        google.script.run.startDatasetGeneration();
+      }
+    </script>
+  </body>
+</html>

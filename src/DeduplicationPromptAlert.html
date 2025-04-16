@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deduplication Prompt</title>
+    <?!= include('SidebarStyles') ?>
+    <style>
+      .step-completed {
+        color: #28a745;
+        font-size: 0.9rem;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .benefits-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+      }
+      .benefits-list li {
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+      }
+      .benefits-list li::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #3367d6;
+      }
+      .steps-list {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+        counter-reset: step;
+      }
+      .steps-list li {
+        margin-bottom: 12px;
+        padding-left: 24px;
+        position: relative;
+      }
+      .steps-list li::before {
+        content: counter(step) ".";
+        counter-increment: step;
+        position: absolute;
+        left: 0;
+        color: #3367d6;
+        font-weight: bold;
+      }
+      .threshold-info {
+        background: #e8eaf6;
+        padding: 12px;
+        border-radius: 4px;
+        margin: 16px 0;
+        font-size: 0.9rem;
+      }
+      .threshold-label {
+        display: block;
+        color: #666;
+        margin-bottom: 4px;
+      }
+      .threshold-value {
+        color: #3367d6;
+        font-weight: bold;
+      }
+      .note {
+        font-style: italic;
+        color: #666;
+        font-size: 0.85rem;
+        margin-top: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="step-completed">
+      ✓ Dataset generated successfully with <?= messageCount ?> entries
+    </div>
+
+    <h2>Recommended Next Step</h2>
+
+    <div class="highlight">
+      <p><strong>Remove near-duplicate messages to improve quality</strong></p>
+
+      <h3 style="margin: 16px 0 8px 0;">Why deduplicate?</h3>
+      <ul class="benefits-list">
+        <li>Increases variety in your dataset</li>
+        <li>Prevents bias from overrepresented content</li>
+      </ul>
+
+      <h3 style="margin: 16px 0 8px 0;">How to deduplicate:</h3>
+      <ol class="steps-list">
+        <li>Open the "Deduplication" section from the add-on menu</li>
+        <li>
+          Set similarity threshold
+          <div class="threshold-info">
+            <span class="threshold-label">Recommended setting:</span>
+            <span class="threshold-value">0.9</span>
+            <div class="note">Higher = stricter matching (0.9 is a good balance)</div>
+          </div>
+        </li>
+        <li>Click "Deduplicate Data" to create a clean version</li>
+      </ol>
+
+      <div class="note">
+        Your original data will be preserved in a separate sheet
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button class="btn" onclick="google.script.host.close()">Start Deduplication →</button>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <h1>Welcome to ELTEX: Dataset Generator</h1>
+    <p>
+      This add-on generates domain-specific datasets for your projects.<br>
+      To get started, create a new project.
+    </p>
+    <button id="createProjectBtn" type="button">Create New Project</button>
+    <div id="errorMessage" class="error"></div>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('createProjectBtn');
+        const errorEl = document.getElementById('errorMessage');
+
+        if (!google?.script?.run) {
+          errorEl.textContent = "Add-on failed to load. Please reload the spreadsheet and try again.";
+          errorEl.style.display = 'block';
+          btn.disabled = true;
+          return;
+        }
+
+        btn.addEventListener('click', () => {
+          btn.disabled = true;
+          btn.textContent = 'Creating...';
+          errorEl.style.display = 'none';
+
+          google.script.run
+            .withSuccessHandler(() => {
+              btn.disabled = false;
+              btn.textContent = 'Create New Project';
+            })
+            .withFailureHandler(err => {
+              errorEl.textContent = "Something went wrong: " + (err?.message || err);
+              errorEl.style.display = 'block';
+              btn.disabled = false;
+              btn.textContent = 'Create New Project';
+            })
+            .showNewProjectDialog();
+        });
+      });
+    </script>
+  </body>
+</html>
