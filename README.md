@@ -29,6 +29,10 @@
 ### 2. Configure Project Properties
 
 - Add required API keys via **File > Project properties > Script properties**
+- Required keys:
+  - `OPENAI_API_KEY` 
+  - `ANTHROPIC_API_KEY` 
+  - `GOOGLE_API_KEY`
 
 ### 3. Deploy as a Test Add-on
 
@@ -40,7 +44,7 @@
 
 - Current phase: **Active development**
 - Marketplace release: **Planned**
-- arXiv paper: **Coming soon**
+- arXiv paper: ["ELTEX: A Framework for Domain-Driven Synthetic Data Generation"](https://arxiv.org/abs/2503.15055)
 
 ## 📄 License
 
