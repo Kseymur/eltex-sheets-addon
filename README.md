@@ -33,12 +33,32 @@
   - `OPENAI_API_KEY` 
   - `ANTHROPIC_API_KEY` 
   - `GOOGLE_API_KEY`
+- **Deduplication service:**
+  - By default, ELTEX expects an external deduplication service.
+  - You can set the following Script Properties to enable deduplication:
+    - `DEDUP_API_URL` — the URL of your deployed deduplication service
+    - `DEDUP_API_KEY` — your API key for the deduplication service
 
 ### 3. Deploy as a Test Add-on
 
 - In the **Deploy** menu, select **Test deployments**
 - Choose **Add-on > Editor add-on**
 - Select your test Google Sheet as the deployment target
+
+## 🧩 Deduplication Service
+
+ELTEX does not include a built-in deduplication backend.  
+Instead, you can deploy your own deduplication service as a [Cloudflare Worker](https://workers.cloudflare.com/) (or any compatible HTTP API).
+
+- A reference implementation is available at:  
+  **[github.com/1712n/dedup-service](https://github.com/1712n/dedup-service)**
+
+**How to use:**
+1. Clone and deploy the deduplication worker to your own Cloudflare account.
+2. Copy the deployed worker URL and your API key.
+3. Set `DEDUP_API_URL` and `DEDUP_API_KEY` in your Script Properties in the ELTEX add-on.
+
+> If you do not configure a deduplication service, deduplication features will not be available.
 
 ## 📌 Status
 
