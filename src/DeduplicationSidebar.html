@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deduplication Parameters</title>
+    <?!= include('SidebarStyles') ?>
+  </head>
+  <body>
+    <div class="container">
+      <div class="step-indicator">Deduplication Configuration</div>
+      <div class="form-section">
+        <form id="parameterForm" onsubmit="handleSubmit(event)">
+          <div class="form-group">
+            <label for="similarity">Similarity Threshold</label>
+            <div class="range-control">
+              <input type="number" 
+                     id="similarity" 
+                     class="form-control"
+                     step="0.01" 
+                     min="0" 
+                     max="1" 
+                     value="0.9"
+                     required>
+              <div class="tooltip">ⓘ
+                <span class="tooltip-text">Threshold for removing duplicates. Higher values mean fewer similar messages will be removed.</span>
+              </div>
+            </div>
+            <div class="tip">Range: 0 (remove more) to 1 (remove less)</div>
+          </div>
+        </form>
+      </div>
+      <div class="button-group">
+        <button class="btn" id="saveBtn" onclick="handleSubmit(event)">Save Parameters</button>
+        <button class="btn" id="dedupeBtn" onclick="deduplicateSyntheticData(event)">Deduplicate Data</button>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+    <script>
+      function initializeParameters() {
+        google.script.run
+          .withSuccessHandler(loadParameters)
+          .withFailureHandler(handleError)
+          .getParameters();
+      }
+
+      function loadParameters(props) {
+        if (!props) return;
+        document.getElementById('similarity').value = props.similarityThreshold || '0.9';
+      }
+
+      function handleSubmit(event) {
+        if (event) event.preventDefault();
+        const saveButton = document.getElementById('saveBtn');
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+        const params = {
+          similarityThreshold: document.getElementById('similarity').value
+        };
+        google.script.run
+          .withSuccessHandler(() => {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Parameters';
+            showStatus('Parameters saved successfully!', true);
+          })
+          .withFailureHandler((error) => {
+            saveButton.disabled = false;
+            saveButton.textContent = 'Save Parameters';
+            showStatus('Error saving parameters: ' + error, false);
+          })
+          .saveParameters(params);
+      }
+
+      function deduplicateSyntheticData(event) {
+        if (event) event.preventDefault();
+        const dedupeButton = document.getElementById('dedupeBtn');
+        dedupeButton.disabled = true;
+        dedupeButton.textContent = 'Deduplicating...';
+        google.script.run
+          .withSuccessHandler(() => {
+            dedupeButton.disabled = false;
+            dedupeButton.textContent = 'Deduplicate Data';
+            showStatus('Deduplication completed successfully!', true);
+          })
+          .withFailureHandler((error) => {
+            dedupeButton.disabled = false;
+            dedupeButton.textContent = 'Deduplicate Data';
+            showStatus('Error during deduplication: ' + error, false);
+          })
+          .deduplicateSyntheticData();
+      }
+
+      function showStatus(message, isSuccess) {
+        const statusDiv = document.getElementById('status');
+        statusDiv.textContent = message;
+        statusDiv.style.display = 'block';
+        statusDiv.className = `status ${isSuccess ? 'success' : 'error'}`;
+        setTimeout(() => {
+          statusDiv.style.display = 'none';
+        }, 3000);
+      }
+
+      function handleError(error) {
+        showStatus('Error loading parameters: ' + error, false);
+      }
+
+      document.addEventListener('DOMContentLoaded', initializeParameters);
+    </script>
+  </body>
+</html>
