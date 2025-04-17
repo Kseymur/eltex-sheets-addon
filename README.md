@@ -37,7 +37,7 @@
   - ELTEX does not include a built-in deduplication backend. You can deploy your own deduplication service (for example, using the [reference Cloudflare Worker](https://github.com/1712n/dedup-service)) or any compatible HTTP API.
   - **If you use the reference Cloudflare Worker implementation,** set the following Script Properties in your ELTEX add-on:
     - `DEDUP_API_URL` — the URL of your deployed deduplication service
-    - `DEDUP_API_KEY` — your API key for your deduplication service (if required by your implementation)
+    - `DEDUP_API_KEY` — your API key for your deduplication service
   - If you implement your own deduplication service, the required properties and their names may differ depending on your API.
 > If you do not configure a deduplication service, deduplication features will not be available.
 
